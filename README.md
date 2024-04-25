@@ -43,25 +43,12 @@ Supported operating systems.
 # Contributors
 Copyright 2022-2024, [Malthe K](https://github.com/guldkage), me@malthe.cc
 <br>
-Created and maintained by [Malthe K.](https://github.com/guldkage)
 Autoinstall maintained by [LeKyuFr](https://github.com/LeKyuFr)
 
 # Support
 The script has been tested many times without any bug fixes, however they can still occur.
 <br>
 If you find errors, feel free to open an "Issue" on GitHub.
-
-# Interactive/Normal installation
-The recommended way to use this script.
-```bash
-bash <(curl -s https://raw.githubusercontent.com/LeKyuFr/Wan-Host-autoinstall-pterodactyl/main/installer.sh)
-```
-
-### Raspbian
-Only for raspbian users. They might need a extra < in the beginning.
-```bash
-bash < <(curl -s https://raw.githubusercontent.com/LeKyuFr/Wan-Host-autoinstall-pterodactyl/main/installer.sh)
-```
 
 ### Required fields
 ```
