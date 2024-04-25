@@ -3,12 +3,12 @@
 
 ########################################################################
 #                                                                      #
-#            Pterodactyl Installer, Updater, Remover and More          #
-#            Copyright 2022, Malthe K, <me@malthe.cc>                  # 
-# https://github.com/guldkage/Pterodactyl-Installer/blob/main/LICENSE  #
+#                      Pterodactyl Auto-Installer                      #
+#            Copyright 2024, Malthe K, LeKyuFr                         # 
+# https://github.com/LeKyuFr/Wan-Host-autoinstall-pterodactyl/LICENSE  #
 #                                                                      #
 #  This script is not associated with the official Pterodactyl Panel.  #
-#  You may not remove this line                                        #
+#  You may not remove this line :)                                     #
 #                                                                      #
 ########################################################################
 
@@ -32,16 +32,23 @@ finish(){
 panel_conf(){
     [ "$SSL" == "true" ] && appurl="https://$FQDN" || appurl="http://$FQDN"
     DBPASSWORD=$(LC_ALL=C </dev/urandom tr -dc '[:alnum:]' | fold -w 16 | head -n 1)
-    mariadb -u root -e "CREATE USER 'pterodactyl'@'127.0.0.1' IDENTIFIED BY '$DBPASSWORD';" && mariadb -u root -e "CREATE DATABASE panel;" && mariadb -u root -e "GRANT ALL PRIVILEGES ON panel.* TO 'pterodactyl'@'127.0.0.1' WITH GRANT OPTION;" && mariadb -u root -e "FLUSH PRIVILEGES;"
+    mariadb -u root -e "CREATE USER 'pterodactyl'@'127.0.0.1' IDENTIFIED BY '$DBPASSWORD';" 
+    mariadb -u root -e "CREATE DATABASE panel;" 
+    mariadb -u root -e "GRANT ALL PRIVILEGES ON panel.* TO 'pterodactyl'@'127.0.0.1' WITH GRANT OPTION;" 
+    mariadb -u root -e "FLUSH PRIVILEGES;"
+    
     php artisan p:environment:setup --author="$EMAIL" --url="$appurl" --timezone="CET" --telemetry=false --cache="redis" --session="redis" --queue="redis" --redis-host="localhost" --redis-pass="null" --redis-port="6379" --settings-ui=true
     php artisan p:environment:database --host="127.0.0.1" --port="3306" --database="panel" --username="pterodactyl" --password="$DBPASSWORD"
     php artisan migrate --seed --force
     php artisan p:user:make --email="$EMAIL" --username="admin" --name-first="admin" --name-last="admin" --password="admin" --admin=1
+    
     chown -R www-data:www-data /var/www/pterodactyl/*
     curl -o /etc/systemd/system/pteroq.service https://raw.githubusercontent.com/guldkage/Pterodactyl-Installer/main/configs/pteroq.service
     (crontab -l ; echo "* * * * * php /var/www/pterodactyl/artisan schedule:run >> /dev/null 2>&1")| crontab -
+   
     sudo systemctl enable --now redis-server
     sudo systemctl enable --now pteroq.service
+    
     if [ "$WINGS" == "true" ]: then
         curl -sSL https://get.docker.com/ | CHANNEL=stable bash
         systemctl enable --now docker
@@ -51,6 +58,7 @@ panel_conf(){
         curl -o /etc/systemd/system/wings.service https://raw.githubusercontent.com/guldkage/Pterodactyl-Installer/main/configs/wings.service
         chmod u+x /usr/local/bin/wings
     fi
+    
     if  [ "$SSL" == "true" ]; then
         rm -rf /etc/nginx/sites-enabled/default
         curl -o /etc/nginx/sites-enabled/pterodactyl.conf https://raw.githubusercontent.com/guldkage/Pterodactyl-Installer/main/configs/pterodactyl-nginx-ssl.conf
@@ -60,6 +68,7 @@ panel_conf(){
         systemctl start nginx
         finish
     fi
+    
     if  [ "$SSL" == "false" ]; then
         rm -rf /etc/nginx/sites-enabled/default
         curl -o /etc/nginx/sites-enabled/pterodactyl.conf https://raw.githubusercontent.com/guldkage/Pterodactyl-Installer/main/configs/pterodactyl-nginx.conf
